@@ -1,26 +1,40 @@
+import { useEffect, useState } from "react";
 
-import { useState, useEffect } from "react";
 
-function Hello() {
-  useEffect(() => {
-    console.log("created");
-    return() => console.log("destroyed :( ");
-  }, [])
-  return <h1>Hello</h1>;
-}
 
 function App() {
-  const [showing, setShowing] = useState(false);
-  const onClick = () => setShowing((prev) => !prev);  
-  /*setShowing을 통해 이전 value를 받아온 다음에, 그 value의 반댓값을 return 할 것이다. */
-  
+  const [loading, setLoading] = useState(true);
+  const [movies, setMovies] = useState([]);
+  const getMovies = async() => {
+    const json = await (
+      await fetch(
+      'https://yts.mx/api/v2/list_movies.json?minimum_rating=9&sort_by=year')
+    ).json();
+    setMovies(json.data.movies);
+    setLoading(false);
+  };
+  useEffect(() => {
+    getMovies();
+  }, []);
   return (
     <div>
-      {showing ? <Hello /> : null } 
-      {/* 만약 showing이 true라면 hello component를 render할꺼야. 아니라면 아무것도 안보여줄꺼야 */}
-      <button onClick={onClick}>{showing ? "Hide" : "Show"}</button>
-    </div>
+      {loading ?(
+        <h1>Loading...</h1>
+      ) : (
+        <div>
+          {movies.map(movie =>(
+            <div key={movie.id}>
+              <img src={movie.medium_cover_image}></img>
+              <h2>{movie.title}</h2>
+              <p>{movie.summary}</p>
+              <ul>
+                {movie.genres.map(g => <li key={g}>{g}</li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+      ) }
+  </div>
   );
 }
-
 export default App;
